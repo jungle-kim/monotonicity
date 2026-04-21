@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light">
+<title>HTML, actually not so great, especially in a team</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="../index.html">Monotonicity</a>
+  <ul class="nav-links">
+    <li><a href="../stuff.html">Stuff I Made</a></li>
+    <li><a href="../blog.html" class="active">Blog</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="content">
+
+    <a class="back-btn" href="../blog.html">Back to Blog</a>
+
+    <!-- ============================================
+         SECTION LABEL — update month and year
+         ============================================ -->
+    <span class="section-label">Blog · April 2026</span>
+
+    <!-- ============================================
+         TITLE — replace with your post title
+         ============================================ -->
+    <h1>HTML, not so great</h1>
+    <p class="meta">April 2026</p>
+
+    <!-- ============================================
+         POST CONTENT
+         Edit or add <p> blocks for paragraphs.
+         Use <h3> for subheadings.
+         Use <div class="divider"></div> between sections.
+         Use <ul> for bullet lists, <ol> for numbered lists.
+         Use <blockquote><p>...</p></blockquote> for Claude responses.
+         ============================================ -->
+
+    <p>In an earlier <a class="home-link" href="it-rules-bureaucracy.html">blog post</a> I wrote as if I have perhaps stumbled upon html as my savior to vibe coding structure, specifically how as it can enable me to create tools purely offline. I finished my first big vibe coding project <a class="home-link" href="../stuff/pm-tool.html">RTS</a> and ended up paring it down significantly.</p>
+
+    <p>Initially, I wanted it to be a tool used by multiple colleagues, who could click on check marks on tasks that they had to do. This required, however:</p>
+    <ul>
+      <li>Everyone to be looking at the same data. But html lives in a browser, and cannot connect to an offline file. Online file already discounted due to IT rules.</li>
+      <li>One workaround is to have a data file (JSON) in the same folder, and have the user upload it each time. Having a user, especially a secondary user who will use the tool for one out of 30 tick marks, requires frictionless access, and this workaround is sticky friction.</li>
+      <li>Browser based tool also relies heavily on localstorage, with each user using their own computer. Therefore, it is likely that users are not looking at the same data. This brings us back to the importance of an online database to act as the single source of truth (no not that Truth). One workaround was: at the end of the session, "save data" button will hardcode most recent data inside the html file. But for same reason as above, this means that the browser will download a new html file, which will have to replace the existing one, which requires a few renamings since the file name should be the same.</li>
+    </ul>
+
+    <p>I've asked various LLMs what to do about this structure about a hundred times, and all I get is some sycophantic slop. I don't think there's a way around the IT restrictions. Simultaneously, I do wonder if Microsoft is working on </p>
+
+    <div class="divider"></div>
+
+    <!-- SUBHEADING EXAMPLE -->
+    <h3>First subheading</h3>
+
+    <p>Paragraph under your first subheading. Develop your first point here.</p>
+
+    <p>Continue the point if needed, or move to a list.</p>
+
+    <!-- BULLET LIST EXAMPLE -->
+    <ul>
+      <li>First bullet point — keep each one to one or two sentences.</li>
+      <li>Second bullet point.</li>
+      <li>Third bullet point.</li>
+    </ul>
+
+    <div class="divider"></div>
+
+    <!-- SUBHEADING EXAMPLE -->
+    <h3>Second subheading</h3>
+
+    <p>Paragraph under your second subheading.</p>
+
+    <!-- NUMBERED LIST EXAMPLE -->
+    <ol>
+      <li>First numbered item.</li>
+      <li>Second numbered item.</li>
+      <li>Third numbered item.</li>
+    </ol>
+
+    <!-- BLOCKQUOTE EXAMPLE — for Claude responses or quotes -->
+    <p>Introduce the quote here — for example, "I asked Claude about this, and it said:"</p>
+
+    <blockquote>
+      <p>First paragraph of the Claude response or quote goes here.</p>
+      <p>Second paragraph if needed — delete this if only one paragraph.</p>
+    </blockquote>
+
+    <p>Your reaction or follow-up to the quote.</p>
+
+  </div>
+</div>
+
+<footer>
+  <span>Monotonicity</span>
+  <span>© 2026</span>
+</footer>
+
+</body>
+</html>

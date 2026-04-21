@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light">
+<title>Personal dashboard — Monotonicity</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html">Monotonicity</a>
+  <ul class="nav-links">
+    <li><a href="../stuff.html" class="active">Stuff I Made</a></li>
+    <li><a href="../blog.html">Blog</a></li>
+  </ul>
+</nav>
+<div class="page-wrap">
+  <div class="content">
+    <a class="back-btn" href="../stuff.html">Back to Stuff I Made</a>
+    <span class="section-label">Vibe Coding</span>
+    <h1>Personal workplace dashboard</h1>
+    <p class="meta">Feb 2026</p>
+    <p>I have two problems: I have tried various iterations of to do lists, with pen and paper being the best, until they clutter my desk. In my earlier naïveté I thought a Kanban board was nice, but work shifts around so much between started and completed. </p>
+    <p>Second problem is that colleagues who work in support and finance write important emails like timesheet cost codes and how to book rooms in an email, which I have just saved in the Outlook drafts folder since I use it often enough.</p>
+    <p>Both are not big problems, but also could be solved easily. </p> 
+    <p>Here's a brief description:</p>
+    <blockquote><p>The tool has four sections: a Portfolio table to track projects and their next task with deadlines, a To-dos list for miscellaneous tasks, a Wiki for saving instructions and reference notes (with full support for pasting formatted content from Outlook or Word), and a Drawer for sensitive or infrequently needed information kept out of sight until you need it.</p>
+      <p>Deadlines turn orange when overdue and green when due today. Your data is saved automatically in your browser's local storage. You can export a backup at any time and reimport it later. A Tools section links out to companion utilities that sit alongside the dashboard </p></blockquote>
+      
+    <p>Here's the list of iterations, with bold parts being what Claude assesses as the most important updates.</p>
+  
+    
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@300;400&display=swap" rel="stylesheet">
+
+<table style="width:100%;border-collapse:collapse;font-family:'IBM Plex Sans',sans-serif;font-weight:300;font-size:15px;color:#272218;background:#FAF8F2;">
+  <thead>
+    <tr style="border-bottom:1px solid #E0D9CC;background:#F5F0E5;">
+      <th style="text-align:left;padding:12px 16px;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7A7060;">#</th>
+      <th style="text-align:left;padding:12px 16px;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7A7060;">Iteration</th>
+      <th style="text-align:left;padding:12px 16px;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7A7060;">Key update</th>
+      <th style="text-align:left;padding:12px 16px;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7A7060;">Initiated by</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">1</td>
+      <td style="padding:12px 16px;">Initial brief</td>
+      <td style="padding:12px 16px;font-weight:400;">Single-page portal concept: Portfolio, To-dos, Wiki, Drawer</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">2</td>
+      <td style="padding:12px 16px;">First build</td>
+      <td style="padding:12px 16px;font-weight:400;">Tabbed layout, project cards with subtasks, localStorage, archive button</td>
+      <td style="padding:12px 16px;">Claude</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">3</td>
+      <td style="padding:12px 16px;">Structural rebuild</td>
+      <td style="padding:12px 16px;font-weight:400;">All sections on one page, Portfolio simplified to Project/Task/Date table</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">4</td>
+      <td style="padding:12px 16px;">Rich text support</td>
+      <td style="padding:12px 16px;font-weight:400;">Wiki + Drawer switched to contenteditable for Outlook/Word paste with table support</td>
+      <td style="padding:12px 16px;">You (goal), Claude (implementation via Copilot attempt)</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">5</td>
+      <td style="padding:12px 16px;">Clean rebuild</td>
+      <td style="padding:12px 16px;font-weight:400;">Removed Copilot's broken code, proper rich text implementation</td>
+      <td style="padding:12px 16px;">Claude</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">6</td>
+      <td style="padding:12px 16px;">Import button</td>
+      <td style="padding:12px 16px;">Load archived JSON back into portal</td>
+      <td style="padding:12px 16px;">You (original brief), Claude (reminded)</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">7</td>
+      <td style="padding:12px 16px;">Due today highlight</td>
+      <td style="padding:12px 16px;">Green "today" label on Portfolio deadlines</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">8</td>
+      <td style="padding:12px 16px;">Due today on To-dos</td>
+      <td style="padding:12px 16px;">Same green highlight extended to To-dos section</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">9</td>
+      <td style="padding:12px 16px;">"!" and "today" on To-dos</td>
+      <td style="padding:12px 16px;">Visual labels matching Portfolio style</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">10</td>
+      <td style="padding:12px 16px;">Tools section</td>
+      <td style="padding:12px 16px;font-weight:400;">Fifth section with link to companion tools</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">11</td>
+      <td style="padding:12px 16px;">Alignment fix</td>
+      <td style="padding:12px 16px;">Tools section wrapped correctly in page div</td>
+      <td style="padding:12px 16px;">Claude</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">12</td>
+      <td style="padding:12px 16px;">Demo data scramble</td>
+      <td style="padding:12px 16px;font-weight:400;">Removed real org/partner names for public audience</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">13</td>
+      <td style="padding:12px 16px;">Header rename</td>
+      <td style="padding:12px 16px;">"Tommy's Work Dashboard" / "my workplace"</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+    <tr style="border-bottom:1px solid #E0D9CC;">
+      <td style="padding:12px 16px;">14</td>
+      <td style="padding:12px 16px;">Disclaimer footer</td>
+      <td style="padding:12px 16px;">Local storage privacy note for public audience</td>
+      <td style="padding:12px 16px;">You</td>
+    </tr>
+  </tbody>
+</table>
+
+
+    <a href="../tools/portal_blog.html" class="product-link">Straight to the Stuff →</a>
+  </div>
+</div>
+<footer><span>Monotonicity</span><span>© 2026</span></footer>
+</body>
+</html>

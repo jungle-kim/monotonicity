@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light only">
+<meta name="supported-color-schemes" content="light">
+<title>PII Cleaner — Monotonicity</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="../index.html">Monotonicity</a>
+  <ul class="nav-links">
+    <li><a href="../stuff.html" class="active">Stuff I Made</a></li>
+    <li><a href="../blog.html">Blog</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="content">
+
+    <a class="back-btn" href="../stuff.html">Back to Stuff I Made</a>
+    <span class="section-label">Quick Win · March 2026</span>
+    <h1>PII Cleaner</h1>
+    <p class="meta">March 2026</p>
+
+    <p>Germans take data security pretty seriously. I couldn't find a good meme on it so here's a joke that Gemini wrote:</p>
+
+    <blockquote>A German is stranded on a deserted island. After three days, he finally sees a rescue ship. The captain shouts through a megaphone: "We're here to save you! What's your name?" The German shouts back: "I cannot tell you that without a signed data processing agreement (AVV)!"</blockquote>
+
+    <p>I don't think the joke is very good, but it was the best out of five options it provided.</p>
+
+    <p>If Germans take data security pretty seriously, German workplaces take it even more seriously. This is problematic in using online tools like Google Translate, let alone all sorts of AI chatbots.</p>
+
+    <p>It would be nice if I could just use an AI chatbot to remove all Personally Identifiable Information (PII) by using a prompt like:</p>
+
+    <blockquote>"Please review the following text and remove or replace all personally identifiable information (PII). This includes names, phone numbers, email addresses, physical addresses, and specific ID numbers (like SSNs or account numbers). Replace the sensitive data with descriptive placeholders like [NAME], [EMAIL], or [PHONE]. Once redacted, provide the cleaned version of the text below."</blockquote>
+
+    <p>But this itself is not compliant since it requires inputting PIIs.</p>
+
+    <p>So I resorted to vibe coding a tool that will do this offline. Intuitively, I took the prompt and turned it around, asked Claude to create an HTML file that would do this.</p>
+
+    <div class="divider"></div>
+
+    <h3>What it detects</h3>
+
+    <p><strong>Names</strong> — People's first names, last names, and full names. The tool recognises over 1,500 common names across English, German, French, Spanish, Portuguese, Italian, Dutch, Scandinavian, Polish, Turkish, Arabic, South Asian, and African naming conventions. It also catches names written in ALL CAPS, hyphenated names like Jean-Pierre or Müller-Schmidt, and names that appear after polite openers like "Dear" or "Sehr geehrte Frau". If a name appears next to a phone number or email address, it is removed automatically. If it's less certain, it flags it for review.</p>
+    <p><strong>Company names</strong> — Legal entity names followed by a suffix like GmbH, AG, Ltd, LLC, SARL, S.A.R.L., BV, SAS, and their variants in any capitalisation. Also catches the company name sitting above a street address in a letterhead block.</p>
+    <p><strong>Addresses</strong> — Street addresses in German (including compound forms like Kaemmergasse, Hauptstraße, Georgstr.), English, French, Spanish, and Dutch. Also catches PO Box and Postfach entries.</p>
+    <p><strong>Email addresses</strong> — Any standard email address format.</p>
+    <p><strong>Phone numbers</strong> — Numbers starting with +, 00, or 0, covering international and local German and European formats. Financial figures like salaries and amounts are excluded.</p>
+    <p><strong>URLs</strong> — Any web address beginning with http or https.</p>
+    <p><strong>Postcodes</strong> — German five-digit postcodes and UK postcode formats.</p>
+    <p><strong>Bank account numbers (IBAN)</strong> — All European IBAN formats, with or without spaces between digit groups.</p>
+    <p><strong>BIC / SWIFT codes</strong> — Bank identifier codes used in international transfers.</p>
+    <p><strong>Tax and social security numbers</strong> — German Steuernummer (slash format), Steuer-ID (11 digits), Sozialversicherungsnummer. Also Spanish DNI/NIE, Dutch BSN, and Italian Codice Fiscale.</p>
+    <p><strong>Dates</strong> — Dates in numeric and written formats. Contract clause numbers like §4.2.1 are excluded.</p>
+    <p><strong>IP addresses</strong> — Any IPv4 address.</p>
+
+    <div class="divider"></div>
+
+    <h3>What it can miss</h3>
+
+    <p><strong>Uncommon or unusual names</strong> — If a name doesn't appear in the built-in lists and isn't near other identifying information like an email or phone number, it may not be caught. Very rare surnames, newly invented names, or names from languages not covered (e.g. Vietnamese, Thai, Japanese given names) are the most likely to slip through.</p>
+    <p><strong>Single names without context</strong> — A surname appearing alone mid-paragraph — "contact Müller directly" — with no title, salutation, or nearby PII may not be flagged.</p>
+    <p><strong>City and place names</strong> — Bonn, Berlin, Frankfurt are not removed. They appear too frequently in legitimate business context to redact automatically. If a city is part of an address it will be caught, but standalone mentions will not.</p>
+    <p><strong>Company names without legal suffixes</strong> — If a company name doesn't end in GmbH, Ltd, SARL etc. and isn't in a letterhead position above a street address, it won't be detected.</p>
+    <p><strong>Salary figures and financial data</strong> — Numbers with decimal separators are deliberately excluded to avoid false positives on phone numbers. Amounts like 6.412,00 EUR pass through untouched. If salary figures are sensitive in your document, remove them manually.</p>
+    <p><strong>Document-specific ID numbers</strong> — Reference numbers, case numbers, contract numbers, and internal codes with custom formats the tool doesn't recognise will not be caught.</p>
+    <p><strong>Names embedded in sentences without capitalisation</strong> — All detection relies on capitalisation patterns. A name typed in all lowercase will not be detected.</p>
+    <p><strong>Sensitive content that isn't PII</strong> — The tool removes identifying information, not confidential content. Commercially sensitive figures, strategic plans, internal policies, or personal opinions are outside its scope entirely.</p>
+
+    <div class="divider"></div>
+
+    <h3>What about ambiguous cases?</h3>
+
+    <p>The tool is by nature conservative, so two consecutive words that start with capital letters can be recognized as a name, such as Product Information. Given that this is an HTML tool, the user has the option to decide on these edge cases — redact or keep.</p>
+    <p>There are also names that should always be redacted, but the tool does not pick up so well. Company names are often the case. Hence there is a function to explicitly write which words or names to always redact.</p>
+
+    <div class="divider"></div>
+
+    <h3>Iteration log</h3>
+
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>What changed</th>
+          <th>Suggested by</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>v1–v3</td>
+          <td>Basic detection rules, colour palette, initial name recognition for common European names</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v4</td>
+          <td><strong>Core detection engine: automatic redaction for high-confidence items and a separate review queue for anything uncertain. Name recognition expanded to 1,500+ names across 15+ language backgrounds. Company names and street address detection added.</strong></td>
+          <td>Claude</td>
+        </tr>
+        <tr>
+          <td>v5</td>
+          <td>Clicking a flagged item opens a popup to confirm — redact is the default action</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v6</td>
+          <td>Detection rules shown as information only — no longer toggleable</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v7</td>
+          <td>Made fully offline — all connections to external services removed</td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v8</td>
+          <td><strong>Popup replaced with a dedicated review panel. Each flagged item shows surrounding sentence for context, with Redact / Keep buttons and a one-click Redact All Remaining.</strong></td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v9</td>
+          <td>Fixed a silent error that was preventing the tool from running entirely</td>
+          <td>Bug fix</td>
+        </tr>
+        <tr>
+          <td>v10</td>
+          <td>German prepositions (AN, AM, IM, ZU, BEI, AUS, MIT, VON) excluded from name detection</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v11–v12</td>
+          <td><strong>Bulk actions added: when the same word appears many times, Redact all / Keep all handles every instance in one click</strong></td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v13</td>
+          <td>Phone detection tightened — salary figures with decimal separators (6.412,00) no longer misidentified as phone numbers</td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v14</td>
+          <td><strong>Biggest detection upgrade: German compound street names (Hauptstraße, Kurfürstendamm), ALL CAPS names (HONG QI LIU), three-part names, hyphenated names, label-triggered detection (Name:, Mitarbeiter:, Geburtsdatum:). Added BIC/SWIFT, Steuernummer, Sozialversicherungsnummer, national IDs, PO Box. Date false positives on clause numbers fixed.</strong></td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v15</td>
+          <td>Dotted company suffixes added: S.A.R.L., S.A.S., B.V., N.V. and variants</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v16</td>
+          <td>IBAN spaced format fixed (DE58 1111 1111 1111 1111 11). Company suffixes now caught in any capitalisation (GMBH, gGMBH)</td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v17–v18</td>
+          <td>Layout rebuilt for corporate Chrome compatibility — CSS variables replaced with hardcoded values, grid replaced with table layout, 50/50 panel split fixed</td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v19</td>
+          <td>Keep All Remaining button added alongside Redact All Remaining</td>
+          <td>Me</td>
+        </tr>
+        <tr>
+          <td>v20–v21</td>
+          <td>Scroll position preserved after Redact / Keep — panel no longer jumps to top. Auto-focus on next item removed. "Also redact" input box added for custom terms (Songil Kim, Blue Capital, …)</td>
+          <td>Me, Claude</td>
+        </tr>
+        <tr>
+          <td>v22</td>
+          <td>EDFI acronyms added to skip list (DEG, FMO, BIO, Proparco, Norfund, Swedfund, COFIDES, FINNFUND, IFU, CDC, OPIC, DFC, EIB, ADB, EBRD) — these are never flagged as names. Single ALL-CAPS detection reverted to two-token minimum.</td>
+          <td>Me</td>
+        </tr>
+      </tbody>
+    </table>
+
+<div class="divider"></div>
+<p><button class="copy-btn" id="copy-sample-btn" onclick="copySample()">Copy sample text for testing</button></p>
+<a href="../tools/pii-cleaner-vblog.html" class="product-link" target="_blank">Straight to the Stuff →</a>
+
+    <span id="sample-text" style="display:none;">INVESTMENT COMMITTEE MEMORANDUM
+Prepared by: Portfolio Management Team
+Date: 14.03.2024
+Reference: IC-2024-0047
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TO: Investment Committee
+FROM: Clara Hoffmann, Senior Investment Officer
+CC: Markus Steinberg, Risk & Compliance
+
+SUBJECT: Proposed Co-Investment — Blue Capital Partners III
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. EXECUTIVE SUMMARY
+
+This memorandum recommends an equity commitment of EUR 12,500,000 into Blue Capital Partners III (the "Fund"), a private equity fund managed by Blue Capital Management S.A.R.L., headquartered at 14 Rue de la Paix, 75002 Paris. The Fund targets growth-stage companies across Sub-Saharan Africa and Southeast Asia with a focus on financial inclusion and climate resilience.
+
+The lead General Partner is Jean-François Beaumont, who has managed two prior funds with a combined AUM of EUR 480,000,000. The Deputy GP is Aisha Nwosu, previously Head of Private Equity at FMO. Day-to-day operations are led by Managing Director Rajesh Subramaniam, reachable at r.subramaniam@campocapital.com or +33 1 44 55 66 77.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. FUND DETAILS
+
+Fund Name:          Blue Capital Partners III
+Manager:            Blue Capital Management S.A.R.L.
+Registered Address: 14 Rue de la Paix, 75002 Paris, France
+Legal Form:         S.A.R.L. (French law)
+Fund Size (target): EUR 300,000,000
+Our Commitment:     EUR 12,500,000
+Vintage Year:       2024
+IBAN (capital calls): FR76 3000 6000 0112 3456 7890 189
+BIC:                BNPAFRPPXXX
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3. KEY PERSONNEL
+
+The following individuals have been identified as key persons under the LPA:
+
+  Jean-François Beaumont
+  Managing Partner
+  DOB: 12.07.1971
+  Nationality: French
+  Address: 8 Avenue du Général Leclerc, 92100 Boulogne-Billancourt
+  Mobile: +33 6 12 34 56 78
+  Email: jf.beaumont@campocapital.com
+
+  Aisha Nwosu
+  Deputy General Partner
+  DOB: 03.11.1978
+  Nationality: Nigerian / Dutch
+  Address: Keizersgracht 482, 1017 EH Amsterdam
+  Mobile: +31 6 98 76 54 32
+  Email: a.nwosu@campocapital.com
+
+  Rajesh Subramaniam
+  Managing Director, Portfolio
+  DOB: 29.02.1980
+  Nationality: Indian
+  Passport No: P4521983
+  Address: Hauptstraße 22, 60313 Frankfurt am Main
+  Mobile: +49 172 334 4567
+  Email: r.subramaniam@campocapital.com
+  Steuer-ID: 86 345 678 901
+
+  Hong Qi Liu
+  Head of ESG & Impact
+  DOB: 15.06.1985
+  Nationality: Chinese / German
+  Address: Kurfürstendamm 44, 10707 Berlin
+  Email: hq.liu@campocapital.com
+  Mobile: +49 30 8877 6655
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4. CO-INVESTORS AND SYNDICATE
+
+The following institutions have confirmed parallel commitments to Blue Capital Partners III:
+
+  - DEG: EUR 15,000,000
+  - FMO: EUR 20,000,000
+  - Norfund: EUR 10,000,000
+  - BIO: EUR 8,000,000
+  - Proparco: EUR 12,000,000
+
+Total confirmed commitments as of 14.03.2024: EUR 77,500,000 against a target first close of EUR 150,000,000.
+
+Note: IFC has expressed interest but has not yet confirmed. EBRD is not participating in this vintage.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. FINANCIAL SUMMARY (FUND III PROJECTIONS)
+
+  Target IRR:             18–22%
+  Target MOIC:            2.1x–2.6x
+  Management Fee:         1.75% p.a. on committed capital
+  Carried Interest:       20% above 8% hurdle
+  Fund Term:              10 years + 2 extensions
+  Projected First Close:  Q2 2024
+
+Previous fund performance (Blue Capital Partners II, vintage 2018):
+  Gross IRR:              24.3%
+  Net IRR:                19.1%
+  DPI:                    0.82x
+  TVPI:                   1.94x
+
+All figures as reported by the manager as of 31.12.2023. Independent verification pending.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6. DUE DILIGENCE CONTACTS
+
+Legal counsel (Fund):     Müller & Partner Rechtsanwälte GbR
+                          Friedrichsdamm 18, 10117 Berlin
+                          Contact: Dr. Tobias Müller
+                          tobias.mueller@muellerpartner.de
+                          Tel: 030 2096 4400
+
+Legal counsel (Our side): Schneider Braun LLP
+                          Contact: Patricia Schneider
+                          p.schneider@schneiderbraun.com
+                          Tel: +49 69 7104 5500
+
+Fund Administrator:       Apex Group Ltd
+                          Contact: JAMES OKAFOR
+                          j.okafor@apexgroup.com
+                          Tel: +352 26 25 50 01
+
+Auditor:                  Ernst & Partners GmbH
+                          Rosenthaler Straße 40–41, 10178 Berlin
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7. COMPLIANCE & KYC
+
+KYC files have been received for all key persons listed in Section 3. AML screening completed on 08.03.2024 by our compliance team. Screening conducted by Anna-Lena Brandt (Compliance Officer, internal).
+
+Beneficial ownership declaration signed by Jean-François Beaumont on 10.03.2024. No adverse findings. PEP screening: negative for all persons. Sanctions check: clean as of 08.03.2024.
+
+Bank account for capital calls verified:
+  Account Holder:   Blue Capital Management S.A.R.L.
+  IBAN:             FR76 3000 6000 0112 3456 7890 189
+  BIC:              BNPAFRPPXXX
+  Bank:             BNP Paribas, Paris
+
+Internal reference: Kostenstelle 4471 / Abteilung Beteiligungsmanagement
+Our internal deal ID: IC-2024-0047
+Server log entry: 192.168.4.22 — access granted 08.03.2024 14:32 UTC
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8. RECOMMENDATION
+
+The Investment Committee is requested to approve an equity commitment of EUR 12,500,000 to Blue Capital Partners III, subject to final LPA negotiation and satisfactory resolution of outstanding KYC items for Rajesh Subramaniam (passport verification pending).
+
+Prepared by:
+Clara Hoffmann
+Senior Investment Officer
+clara.hoffmann@ourinstitution.com
++49 221 9988 7766
+Friedrichsdamm 18, 10117 Berlin
+
+Reviewed by:
+Markus Steinberg
+Head of Risk & Compliance
+m.steinberg@ourinstitution.com
++49 221 9988 7700
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONFIDENTIAL — FOR INTERNAL USE ONLY</span>
+
+
+  </div>
+</div>
+
+<footer>
+  <span>Monotonicity</span>
+  <span>© 2026</span>
+</footer>
+
+<script>
+  function copySample() {
+    const text = document.getElementById('sample-text').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-sample-btn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy sample text for testing';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>

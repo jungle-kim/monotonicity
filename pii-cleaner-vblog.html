@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PII Cleaner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;margin:0;padding:0;}body{background:#F5F0E5;color:#272218;font-family:system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;min-height:100vh;}
+header{background:#272218;padding:20px 40px;display:flex;align-items:baseline;gap:16px;width:100%;box-sizing:border-box;}
+header h1{font-family:Georgia,'Times New Roman',serif;font-size:1.35rem;color:#FAF8F2;font-weight:500;}
+header .sub{font-size:.75rem;color:#9a9080;letter-spacing:.08em;text-transform:uppercase;}
+.rules-section{background:#FAF8F2;border-bottom:1px solid #ddd8cc;padding:14px 40px;}
+.rules-title{font-size:.65rem;color:#7a7060;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;font-weight:600;}
+.rules-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;align-items:center;min-height:28px;}
+.grp-lbl{font-size:.6rem;color:#c0b8a8;letter-spacing:.1em;text-transform:uppercase;font-weight:600;width:100%;margin-top:6px;}
+.rtag{display:flex;align-items:center;gap:6px;background:#eaf3ec;border:1.5px solid #2F6642;padding:4px 10px;border-radius:3px;}
+.rtag .dot{width:6px;height:6px;border-radius:50%;background:#2F6642;flex-shrink:0;}
+.rtag span{font-size:.7rem;color:#2F6642;font-weight:500;}
+.rnote{font-size:.64rem;color:#c0b8a8;padding:6px 0 0;width:100%;line-height:1.5;}
+.controls{padding:14px 40px;border-bottom:1px solid #ddd8cc;display:flex;align-items:center;gap:10px;background:#FAF8F2;flex-wrap:wrap;}
+.controls > *{display:inline-block;vertical-align:middle;margin:2px 4px;}
+.btn{font-family:system-ui,-apple-system,sans-serif;font-size:.78rem;font-weight:600;border:none;padding:9px 24px;cursor:pointer;border-radius:3px;transition:all .15s;}
+.btn-run{background:#D4621A;color:#fff;}
+.btn-run:hover{background:#b55215;}
+.btn-run:active{transform:scale(.97);}
+.btn-sec{background:none;border:1.5px solid #ddd8cc;color:#7a7060;font-weight:500;}
+.btn-sec:hover{border-color:#2F6642;color:#2F6642;}
+.btn-final{background:#2F6642;color:#fff;display:none;}
+.btn-final:hover{background:#265535;}
+.stats{font-size:.7rem;color:#7a7060;}
+.stats b{color:#2F6642;}
+.main{display:table;width:100%;min-height:420px;table-layout:fixed;border-collapse:collapse;margin:0;padding:0;}
+.panel{display:table-cell;vertical-align:top;width:50%;}
+.panel:first-child{border-right:1px solid #ddd8cc;}
+.ph{padding:11px 20px;border-bottom:1px solid #ddd8cc;display:flex;align-items:center;justify-content:space-between;background:#FAF8F2;}
+.plbl{font-size:.65rem;color:#7a7060;letter-spacing:.12em;text-transform:uppercase;font-weight:600;}
+.bsm{font-size:.65rem;background:none;border:1px solid #ddd8cc;color:#7a7060;padding:3px 9px;cursor:pointer;border-radius:2px;}
+.bsm:hover{border-color:#C43E62;color:#C43E62;}
+textarea{display:block;width:100%;background:#FAF8F2;border:none;outline:none;color:#272218;font-size:.88rem;line-height:1.8;padding:22px;resize:none;min-height:400px;box-sizing:border-box;margin:0;}
+textarea::placeholder{color:#c8c2b6;}
+#outpanel{display:block;width:100%;background:#FAF8F2;padding:22px;font-size:.88rem;line-height:1.8;overflow-y:auto;min-height:400px;white-space:pre-wrap;word-break:break-word;color:#3a3428;box-sizing:border-box;margin:0;}
+.t-name{background:#fdeee6;color:#a04010;border-radius:3px;padding:1px 5px;font-size:.78em;font-weight:600;}
+.t-co{background:#fff0d6;color:#8a5500;border-radius:3px;padding:1px 5px;font-size:.78em;font-weight:600;}
+.t-addr{background:#e8f4ff;color:#1a4a7a;border-radius:3px;padding:1px 5px;font-size:.78em;font-weight:600;}
+.t-contact{background:#eaf3ec;color:#2a5c3a;border-radius:3px;padding:1px 5px;font-size:.78em;font-weight:600;}
+.t-id{background:#fce8ed;color:#8a2040;border-radius:3px;padding:1px 5px;font-size:.78em;font-weight:600;}
+#review-panel{display:none;background:#FAF8F2;border-top:2px solid #E8A020;}
+.rp-header{padding:12px 40px;background:#fffbf2;border-bottom:1px solid #ddd8cc;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-sizing:border-box;}
+.rp-title{font-size:.72rem;font-weight:700;color:#7a4800;letter-spacing:.06em;text-transform:uppercase;}
+.rp-count{font-size:.7rem;color:#9a7040;margin-left:6px;}
+.rp-hint{font-size:.64rem;color:#b0a080;}
+.btn-redact-all{background:#D4621A;color:#fff;border:none;padding:6px 16px;border-radius:3px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.btn-keep-all{background:none;border:1.5px solid #ddd8cc;color:#7a7060;padding:6px 16px;border-radius:3px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.btn-redact-all:hover{background:#b55215;}
+.btn-keep-all:hover{border-color:#7a7060;color:#272218;}
+.rp-list{max-height:320px;overflow-y:auto;padding:6px 40px 16px;}
+.rp-item{padding:12px 0;border-bottom:1px solid #ddd8cc;}
+.rp-item:last-child{border-bottom:none;}
+.rp-item.done{opacity:.35;pointer-events:none;}
+.rp-item-top{display:flex;align-items:flex-start;gap:12px;}
+.rp-phrase{font-weight:700;color:#272218;font-size:.85rem;min-width:130px;flex-shrink:0;}
+.rp-middle{flex:1;}
+.rp-context{font-size:.78rem;color:#7a7060;line-height:1.5;}
+.rp-context mark{background:#ffe0a0;color:#272218;padding:0 2px;border-radius:2px;font-weight:600;font-style:normal;}
+.rp-reason{font-size:.64rem;color:#b0a080;margin-top:3px;}
+.rp-actions{display:flex;gap:6px;flex-shrink:0;}
+.rp-bulk{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.btn-rv-redact{background:#D4621A;color:#fff;border:none;padding:5px 12px;border-radius:3px;font-size:.7rem;font-weight:700;cursor:pointer;}
+.btn-rv-keep{background:none;border:1.5px solid #ddd8cc;color:#7a7060;padding:5px 10px;border-radius:3px;font-size:.7rem;cursor:pointer;}
+.btn-rv-redact:hover{background:#b55215;}
+.btn-rv-keep:hover{border-color:#888;color:#555;}
+.btn-bulk-redact{background:none;border:1.5px solid #D4621A;color:#D4621A;padding:4px 10px;border-radius:3px;font-size:.67rem;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn-bulk-keep{background:none;border:1.5px solid #ddd8cc;color:#7a7060;padding:4px 10px;border-radius:3px;font-size:.67rem;cursor:pointer;white-space:nowrap;}
+.btn-bulk-redact:hover{background:#fdf0e8;}
+.btn-bulk-keep:hover{background:#f0ece0;border-color:#aaa;}
+.rp-empty{padding:16px 0;font-size:.8rem;color:#7a7060;text-align:center;}
+#summary{display:none;background:#FAF8F2;border-top:1px solid #ddd8cc;padding:20px 40px 28px;}
+#summary h3{font-family:Georgia,serif;font-size:1rem;color:#272218;margin-bottom:14px;font-weight:500;}
+.sum-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.sum-card{background:#F5F0E5;border:1px solid #ddd8cc;border-radius:3px;padding:10px 14px;min-width:140px;}
+.sum-card .sc-n{font-size:1.4rem;font-weight:600;color:#D4621A;}
+.sum-card .sc-l{font-size:.68rem;color:#7a7060;text-transform:uppercase;letter-spacing:.08em;}
+.sum-list{font-size:.78rem;color:#7a7060;line-height:1.9;columns:2;gap:24px;}
+.sum-list b{color:#272218;}
+.toast{position:fixed;bottom:22px;right:22px;background:#272218;color:#FAF8F2;font-size:.75rem;padding:9px 18px;font-weight:500;border-left:3px solid #2F6642;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;border-radius:2px;z-index:999;}
+.toast.alert{border-left-color:#C43E62;}
+.toast.show{opacity:1;transform:translateY(0);}
+@media(max-width:700px){
+  .main{display:block;}
+  .panel{display:block;width:100%;}
+  .panel:first-child{border-right:none;border-bottom:1px solid #ddd8cc;}
+  header,.controls,.rules-section,#summary,.rp-header,.rp-list{padding-left:18px;padding-right:18px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>PII Cleaner</h1></div>
+  <div class="sub">Document Anonymizer</div>
+</header>
+<div class="rules-section">
+  <div class="rules-title">Rules Applied</div>
+  <div id="rulesgrid"></div>
+</div>
+<div class="controls">
+  <button class="btn btn-run" onclick="runClean()">&#9654; Clean Document</button>
+  <button class="btn btn-final" id="btnFinal" onclick="finalise()">&#10003; Finalise</button>
+  <button class="btn btn-sec" onclick="copyOutput()">Copy Output</button>
+  <div style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;">
+    <label style="font-size:.7rem;color:#7a7060;white-space:nowrap;">Also redact:</label>
+    <input id="customTerms" type="text" placeholder="Songil Kim, Blue Capital, ..." style="font-size:.75rem;padding:6px 10px;border:1.5px solid #ddd8cc;border-radius:3px;background:#FAF8F2;color:#272218;width:220px;font-family:system-ui,-apple-system,sans-serif;" title="Comma-separated names or phrases to always redact">
+  </div>
+  <div class="stats" id="stats"></div>
+</div>
+<div class="main">
+  <div class="panel">
+    <div class="ph">
+      <span class="plbl">Input</span>
+      <button class="bsm" onclick="document.getElementById('inp').value='';updateStats()">Clear</button>
+    </div>
+    <textarea id="inp" placeholder="Paste document here&#x2026;&#10;&#10;All processing is local &#x2014; nothing leaves your browser." oninput="updateStats()"></textarea>
+  </div>
+  <div class="panel">
+    <div class="ph">
+      <span class="plbl">Output <span id="outmode" style="color:#E8A020;font-size:.6rem;margin-left:6px;"></span></span>
+      <button class="bsm" onclick="clearOut()">Clear</button>
+    </div>
+    <div id="outpanel"></div>
+  </div>
+</div>
+<div id="review-panel">
+  <div class="rp-header">
+    <div>
+      <span class="rp-title">&#9888; Review Flagged Items</span>
+      <span class="rp-count" id="rp-count"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <span class="rp-hint">Enter = Redact &nbsp;|&nbsp; Closing without choosing = Redact</span>
+      <button class="btn-redact-all" onclick="redactAllRemaining()">Redact All Remaining</button>
+      <button class="btn-keep-all" onclick="keepAllRemaining()">Keep All Remaining</button>
+    </div>
+  </div>
+  <div class="rp-list" id="rp-list"></div>
+</div>
+<div id="summary">
+  <h3>Redaction Summary</h3>
+  <div class="sum-grid" id="sumgrid"></div>
+  <div class="sum-list" id="sumlist"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function norm(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escapeAndTag(text){
+  const e=esc(text);
+  const lbls=['NAME','COMPANY','ADDRESS','PHONE','EMAIL','URL','POSTCODE','IP ADDRESS','IBAN','BIC','TAX ID','NATIONAL ID','SOC SEC','DATE'];
+  const cm={'NAME':'t-name','COMPANY':'t-co','ADDRESS':'t-addr',
+            'EMAIL':'t-contact','PHONE':'t-contact','URL':'t-contact','POSTCODE':'t-contact',
+            'IP ADDRESS':'t-id','IBAN':'t-id','BIC':'t-id','TAX ID':'t-id','NATIONAL ID':'t-id','SOC SEC':'t-id','DATE':'t-id'};
+  return e.replace(new RegExp('\\[('+lbls.join('|')+')\\]','g'),(_,l)=>'<span class="'+(cm[l]||'t-id')+'">['+l+']</span>');
+}
+function showToast(msg,alert){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(alert?' alert':'');
+  void t.offsetWidth; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+function updateStats(){
+  const v=document.getElementById('inp').value;
+  const w=v.trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('stats').innerHTML=v.length>0?'<b>'+w+'</b> words &middot; <b>'+v.length+'</b> chars':'';
+}
+
+// ── Name lists ────────────────────────────────────────────────────────────────
+const FN=new Set(['aaron','adam','adrian','alan','albert','alex','alexander','alexandra','alice','alicia','alison','amanda','amber','amy','andrea','andrew','angela','ann','anna','anne','anthony','arthur','ashley','austin','barbara','benjamin','beth','bradley','brandon','brian','brittany','bruce','bryan','caleb','cameron','carol','caroline','catherine','charles','charlotte','chelsea','chris','christian','christina','christine','christopher','claire','cody','colin','connor','craig','crystal','daniel','david','dawn','dean','deborah','denise','dennis','derek','diana','donald','dorothy','douglas','dylan','edward','eleanor','elizabeth','emily','emma','eric','ethan','eugene','eva','evelyn','frances','frank','frederick','gary','george','grace','hannah','harry','heather','henry','ian','jack','jacob','james','jane','jason','jeffrey','jennifer','jeremy','jessica','john','jonathan','joseph','joshua','julia','julian','julie','justin','karen','kate','katherine','kelly','kevin','kimberly','kyle','laura','lauren','lawrence','leah','leonard','lewis','linda','lisa','logan','lori','luke','madison','margaret','maria','mark','martin','mary','matthew','megan','melissa','michael','michelle','morgan','nancy','nathan','nicholas','nicole','noah','oliver','olivia','patricia','patrick','paul','peter','philip','rachel','rebecca','richard','robert','roger','ronald','ryan','samantha','samuel','sandra','sarah','scott','sean','sharon','stephanie','stephen','steven','susan','taylor','thomas','timothy','tyler','victoria','vincent','walter','william','zachary',
+'andreas','anja','axel','bernd','birgit','boris','britta','carsten','christoph','claudia','clemens','daniela','dieter','dietmar','dominic','elias','emil','erika','ernst','fabian','felix','florian','franziska','frederike','georg','gerd','gerhard','gisela','gregor','hans','harald','heike','heinz','helena','helmut','hendrik','herbert','holger','ingrid','iris','jakob','jana','janina','jasmin','jochen','johann','johannes','jonas','juliane','kai','karl','katja','katrin','klaus','lars','lea','lena','leon','luisa','lukas','manfred','marika','mario','marina','marius','markus','matthias','max','maximilian','monika','niklas','nina','nora','otto','pascal','petra','philipp','rene','roland','roman','rolf','rosa','sebastian','simon','sofia','sophia','stefanie','stefan','stephan','susanne','timo','tim','tobias','tom','ulrich','ursula','vanessa','vera','verena','werner','wolfgang','yvonne',
+'alexandre','alexis','amelie','andre','antoine','audrey','baptiste','camille','celine','christophe','clement','etienne','florent','francois','guillaume','helene','hugo','isabelle','jean','julien','laetitia','laurent','lea','louis','lucie','manon','mathieu','nathalie','olivier','pierre','raphael','romain','sophie','sylvie','valentin','valerie','virginie','xavier',
+'alejandro','alfonso','alfredo','alvaro','ana','beatriz','carlos','carmen','cristina','diego','elena','fernando','francisco','gabriela','ignacio','ines','isabel','javier','jorge','jose','juan','luis','manuel','maria','miguel','pablo','raquel','santiago','sergio','teresa','valentina','victor','rodrigo','camila','isabella','nicolas','mariana','andres','catalina','renata','lorena','adriana','patricia','monica','carolina','roberto','ricardo','guillermo','arturo','alberto','antonio','enrique','rafael',
+'joao','pedro','paulo','marcos','lucas','gabriel','matheus','guilherme','thiago','leandro','bruno','fabio','renato','anderson','adriano','ana','isabela','beatriz','larissa','fernanda','juliana','leticia','bruna','alessandra','bianca','priscila',
+'alberto','alessandro','alessia','angelo','chiara','davide','federico','filippo','francesca','giovanni','giulia','giuseppe','luca','marco','martina','matteo','paola','stefano','simone','michele',
+'arjen','bas','daan','femke','fleur','gerrit','inge','jan','jeroen','joris','marieke','martijn','niek','pieter','roos','ruben','sander','sanne','thijs','wouter','floris','kees','piet','henk','bram','jens','stijn','lotte',
+'bjorn','erik','sven','gunnar','olaf','leif','magnus','sigrid','astrid','anders','henrik','kristian','mikkel','rasmus','tobias','villads','emilie','cecilie','annette','birgitte','dorthe','hanne','kirsten','marianne','mette','pia','rikke',
+'adam','agnieszka','aleksandra','andrzej','barbara','beata','bogdan','bozena','dariusz','dorota','ewa','grazyna','irena','jacek','jadwiga','jaroslaw','joanna','jolanta','katarzyna','krystyna','krzysztof','lidia','lukasz','marek','marta','marzena','michal','piotr','rafal','stanislaw','sylwia','tomasz','urszula','waldemar','wojciech','zbigniew','zofia','zuzanna','jiri','jana','petr','pavel','tereza','katerina',
+'mehmet','mustafa','ahmet','ali','hasan','huseyin','ibrahim','ismail','osman','omer','fatma','ayse','hatice','zeynep','emine','elif','esra','yusuf','murat','kemal','suleyman','bulent','cengiz','ercan',
+'mohamed','muhammad','ahmad','hassan','hussein','omar','khalid','tariq','fatima','aisha','khadija','maryam','zainab','nour','layla','rania','hana','abdulrahman','youssef','nasser','walid','samir','karim','amine',
+'rajesh','suresh','ramesh','mahesh','dinesh','naresh','rakesh','mukesh','ganesh','priya','pooja','neha','anjali','sunita','kavita','anita','rekha','meena','geeta','arjun','vikram','rahul','rohit','amit','anil','sunil','ajay','vijay','sanjay','ananya','aditi','deepa','divya','shreya','swati','smita','nisha','ritu','sonia','imran','faisal','salman','asif','nadeem','yasir',
+'adewale','adebayo','adeyemi','oluwaseun','oluwafemi','oluwatobi','chisom','chukwuemeka','nnamdi','emeka','uche','obinna','ikechukwu','kwame','kofi','ama','abena','akosua','yaw','kojo','efua','adwoa','amadou','mamadou','ibrahima','oumar','modou','cheikh','fatou','mariama']);
+
+const LN=new Set(['bauer','baumann','beck','becker','berg','berger','braun','brandt','breuer','busch','decker','engel','fink','fischer','frank','franke','friedrich','fuchs','geiger','graf','gross','grunewald','gunther','haas','hahn','hammer','hansen','hartmann','haupt','heinrich','herrmann','hoffmann','hofmann','horn','huber','jager','jung','kaiser','keller','kern','klein','klose','koch','kohler','konig','kraft','krause','kruger','kuhn','kunze','lang','lange','lehmann','lenz','lindner','lorenz','ludwig','maier','mann','mayer','meier','merkel','meyer','moller','moser','muller','nagel','neumann','peters','pfeiffer','richter','roth','schafer','schmidt','schmitt','schmitz','schneider','scholz','schreiber','schroder','schubert','schulte','schulz','schwarz','seitz','simon','sommer','stark','stein','steiner','wagner','walter','weber','weiss','werner','winkler','winter','wolf','wolff','zimmermann','ziegler',
+'adams','allen','anderson','bailey','baker','barnes','bell','bennett','brooks','brown','burns','butler','campbell','carter','clark','cole','collins','cook','cooper','cox','davies','davis','dixon','edwards','ellis','evans','fisher','foster','fox','freeman','gibson','graham','grant','gray','green','griffin','hall','hamilton','harris','harrison','hayes','hill','holmes','hughes','hunt','hunter','jackson','james','johnson','jones','kelly','kennedy','king','lee','lewis','lloyd','long','marshall','mason','mitchell','moore','morgan','morris','morrison','murphy','murray','nelson','newman','newton','nichols','owen','page','parker','patterson','pearce','phillips','powell','price','reid','reynolds','richardson','roberts','robertson','robinson','rogers','ross','russell','scott','shaw','simpson','smith','spencer','stewart','stone','sullivan','taylor','thompson','turner','walker','walsh','ward','watson','white','williams','wilson','wood','wright','young',
+'bernard','blanc','bonnet','bouchard','chevalier','colin','dubois','dumont','dupont','durand','fontaine','garnier','girard','giraud','lambert','laurent','leclerc','lecomte','lefebvre','legrand','lemaire','leroy','levy','marchand','mercier','michel','moreau','morel','morin','nicolas','perrin','petit','picard','richard','roche','rousseau','roussel','thomas','vincent',
+'garcia','gonzalez','rodriguez','hernandez','lopez','martinez','perez','sanchez','ramirez','flores','torres','chavez','reyes','morales','jimenez','diaz','gutierrez','vargas','castillo','ramos','romero','mendoza','alvarez','ruiz','delgado','ortiz','herrera','medina','aguilar','guerrero',
+'silva','santos','oliveira','souza','lima','pereira','ferreira','costa','carvalho','almeida','nascimento','brito','ribeiro','barros','pinto','rodrigues','martins',
+'kowalski','kowalska','nowak','wisniewski','wojciechowski','kowalczyk','kaminski','lewandowski','zielinski','szymanski','wozniak','dabrowski','kozlowski','jankowski','mazur','kwiatkowski','krawczyk','piotrowska','grabowski',
+'yilmaz','kaya','demir','sahin','celik','yildiz','ozturk','arslan','dogan','kilic','aslan','cetin','aydin','ozdemir','erdogan','polat','kurt','simsek',
+'singh','sharma','patel','kumar','gupta','rao','joshi','mishra','tiwari','verma','pandey','srivastava','chauhan','khan','ahmed','hussain','ansari','sheikh','siddiqui','qureshi','malik','chaudhry','mirza','baig','hashmi','mukherjee','chatterjee','banerjee','ghosh','das','bose','sen','dutta','roy','nair','menon','iyer','pillai','krishnan','reddy','naidu',
+'okafor','okonkwo','nwosu','eze','igwe','obi','chukwu','adeyemi','adebayo','adesanya','olatunde','bakare','taiwo','adeola','mensah','asante','owusu','boateng','acheampong','diallo','traore','coulibaly','camara','bah','barry','fall','ndiaye','mbaye','sow','diop',
+'tanaka','yamamoto','nakamura','watanabe','kobayashi','saito','kato','yoshida','yamada','sasaki','yamaguchi','matsumoto','inoue','kimura','hayashi','shimizu','yamazaki','mori','ikeda','hashimoto','ishikawa','ogawa','sakamoto','fujiwara','nishimura','fukuda','maeda','miura','takahashi','suzuki',
+'zhang','zhu','huang','chen','yang','zhao','wu','zhou','sun','gao','zheng','luo','lin','he','xiong','xie','han',
+'choi','jeon','jung','yoon','lim','oh','kwon','shin','jang','hong','ko','moon','son','hwang','ahn','bae','seo','ryu']);
+
+const EA_REVIEW=new Set(['kim','park','lee','ng','ho','ma','wu','lu','xu','yu','wei','bo','le']);
+
+const SKIP=new Set(['januar','februar','marz','april','mai','juni','juli','august','september','oktober','november','dezember','january','february','march','june','july','october','montag','dienstag','mittwoch','donnerstag','freitag','samstag','sonntag','monday','tuesday','wednesday','thursday','friday','saturday','sunday','an','am','im','zu','bei','aus','mit','der','die','das','und','oder','aber','nach','vor','seit','uber','unter','durch','gegen','ohne','fur','new','los','san','north','south','east','west','dear','sehr','liebe','lieber','seite','page','version','kapitel','abschnitt','teil','punkt','anlage','anhang','betreff','betr','datum','date','von','from','an','to']);
+
+const TITLES=['Sehr geehrter Herr','Sehr geehrte Frau','Lieber','Liebe','Dear','Mr\\.','Mrs\\.','Ms\\.','Dr\\.','Prof\\.','Mag\\.','Dipl\\.','Mr','Mrs','Ms','Miss','Dr','Prof','Herr','Frau','Hr','Fr','Monsieur','Madame','Mme\\.','M\\.','Sr\\.','Sra\\.','Don','Dona'];
+
+// Name labels used as detection triggers
+const NAME_LABELS=['Name','Nachname','Vorname','Mitarbeiter','Arbeitnehmer','Arbeitgeber','Employee','Kunde','Customer','Auftraggeber','Empfaenger','Empfänger','Absender','Kontakt','Contact','Ansprechpartner','Versicherter','Insured','Patient','Inhaber','Kontoinhaber'];
+
+// Address labels
+const ADDR_LABELS=['Adresse','Address','Anschrift','Wohnort','Wohnanschrift','Privatadresse','Dienstanschrift','Postanschrift','Lieferadresse','Rechnungsadresse','Straße','Strasse','Wohnhaft'];
+
+// Sensitive field labels (DOB, personnel, etc.)
+const FIELD_LABELS=['Geburtsdatum','Geburtsort','Geburtsdaten','Familienstand','Personalnr','Personalnummer','Personal-Nr','Pers\\.Nr','Mitarbeiternummer','Steuernummer','Steuer-ID','Steueridentifikationsnummer','Sozialversicherungsnummer','SV-Nummer','Versicherungsnummer','Kostenstelle','Abteilung','Bankverbindung','Kontonummer','BLZ','IBAN','BIC'];
+
+const DNA_PREFIXES=[
+  {p:/\bMc[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bMac[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bO'[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\b(?:van den|van der|van de|van|de|den|der|ten|ter)\s+[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bAl-[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bal-[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bbin\s+[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bbinti\s+[A-Z][a-z]+\b/g,l:'[NAME]'},
+  {p:/\bIbn\s+[A-Z][a-z]+\b/g,l:'[NAME]'},
+];
+const DNA_SUFFIX=/\b[A-Z][a-z]+(i\u0107|ovic|ovi\u0107|ski|ska|escu|nen|oglu|ian|yan|idze|shvili|sson)\b/g;
+
+// Known abbreviations to exclude from ALL-CAPS detection
+const CAPS_SKIP=new Set(['EUR','CHF','GBP','USD','PDF','HTML','XML','API','ID','AG','KG','OHG','UG','HR','IT','EDV','PLZ','TEL','FAX','STR','NR','GF','CEO','CFO','COO','CTO','HR','IV','VI','VII','VIII','IX','XI','XII','AN','AM','IM','ZU','BEI','AUS','MIT','VON','DER','DIE','DAS','UND','ODER','ABER','NACH','VOR','SEIT','FUR','BZW','USW','ZB','CA','VS','NB','PS','RE','FW','AW','CC','BCC','PO','BOX','DEG','FMO','BIO','PROPARCO','COFIDES','FINNFUND','NORFUND','SWEDFUND','IFU','CDC','OPIC','DFC','EIB','ADB','EBRD','EDFI']);
+
+const LEGAL_CI=/\b(?:GMBH|GmbH|gGMBH|gGmbH|GGMBH|AG|KG|OHG|UG|LLC|LTD|INC|CORP|SARL|SAS|SRL|SPA|BV|NV|GBR)\b/g;
+const LEGAL=['GmbH & Co\\. KG','GmbH','gGmbH','AG','KGaA','KG','OHG','UG','e\\.V\\.','GbR','PartG','Ltd\\.','Ltd','LLC','Inc\\.','Inc','Corp\\.','PLC','LLP','B\\.V\\.','BV','N\\.V\\.','NV','S\\.A\\.R\\.L\\.','S\\.A\\.R\\.L','SARL','S\\.A\\.S\\.','S\\.A\\.S','SAS','S\\.R\\.L\\.','S\\.R\\.L','SRL','S\\.p\\.A\\.','SpA','S\\.A\\.','SA','S\\.L\\.','SL','S\\.C\\.','SC','A\\.B\\.','AB','A\\.S\\.','AS','ApS','Pty Ltd'];
+
+// German compound street suffixes + standalone
+const STREET_SUFFIX=/\b\w*(?:stra\u00dfe|strasse|str\.|gasse|weg|allee|platz|damm|ring|chaussee|ufer|pfad|steig|graben|markt|stieg)\s*\d+[a-z]?/gi;
+// Standalone street words for non-compound languages
+const STREET_STANDALONE=new RegExp('\\b[A-Z\u00c4\u00d6\u00dc][\\w\u00e4\u00f6\u00fc\u00df\\s\\-]{1,40}\\s+(?:Avenue|Ave\\.|Street|Road|Rd\\.|Boulevard|Blvd\\.|Lane|Drive|Court|Crescent|Place|laan|straat|gracht|rue|via|viale|piazza|corso|calle|avenida)\\s*\\d*','gi');
+// PO Box / Postfach
+const POSTFACH=/\b(?:Postfach|P\.O\.?\s*Box|PO\s*Box)\s*\d+\b/gi;
+
+// ── Span engine ───────────────────────────────────────────────────────────────
+function applySpans(text,spans){
+  spans.sort((a,b)=>a.start-b.start);
+  const merged=[];
+  for(const s of spans){if(merged.length&&s.start<merged[merged.length-1].end)continue;merged.push(s);}
+  merged.sort((a,b)=>b.start-a.start);
+  let r=text;
+  for(const s of merged)r=r.slice(0,s.start)+s.label+r.slice(s.end);
+  return{text:r,count:merged.length,merged};
+}
+
+function getPIIPositions(text){
+  const pos=[];
+  [/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g,
+   /(?<![,.])\b(?:\+\d[\d\s\-\/().]{6,}\d|00\d[\d\s\-\/().]{5,}\d|0\d[\d\s\-\/().]{5,}\d)\b/g,
+   /\b[A-Z]{2}\d{2}[A-Z0-9 ]{4,30}\b/g].forEach(p=>{
+    let m;p.lastIndex=0;
+    while((m=p.exec(text))!==null)pos.push({s:m.index,e:m.index+m[0].length});
+  });
+  return pos;
+}
+function nearPII(start,end,piiPos){return piiPos.some(p=>Math.abs(p.s-start)<200||Math.abs(p.e-end)<200);}
+
+// ── Detection functions ───────────────────────────────────────────────────────
+function detectCompanies(text){
+  const spans=[];
+  // Case-insensitive pass for all-caps or all-lowercase variants
+  let mci; LEGAL_CI.lastIndex=0;
+  while((mci=LEGAL_CI.exec(text))!==null){
+    // Walk back to find the start of the company name (up to 60 chars)
+    const lookback=text.slice(Math.max(0,mci.index-60),mci.index);
+    const nameMatch=lookback.match(/[A-ZÄÖÜ\w][\w\säöüÄÖÜ\-&,.'\/]*$/);
+    const nameStart=nameMatch?mci.index-nameMatch[0].length:mci.index;
+    spans.push({start:nameStart,end:mci.index+mci[0].length,label:'[COMPANY]'});
+  }
+  const sfxPat=new RegExp('[A-Z\u00c4\u00d6\u00dc][\\w\\s\\-&,.\'/]{0,60}?\\b('+LEGAL.join('|')+')\\b','g');
+  let m;
+  while((m=sfxPat.exec(text))!==null)spans.push({start:m.index,end:m.index+m[0].length,label:'[COMPANY]'});
+  // Letterhead: line before a street/address line
+  const stTest=/\b\w*(?:stra\u00dfe|strasse|str\.|gasse|weg|allee|platz)\s*\d/i;
+  const lines=text.split('\n');
+  for(let i=0;i<lines.length;i++){
+    if(stTest.test(lines[i])&&i>0){
+      let pi=i-1;while(pi>=0&&lines[pi].trim()==='')pi--;
+      if(pi>=0){
+        const pl=lines[pi].trim();
+        if(pl.length>2&&/^[A-Z\u00c4\u00d6\u00dc]/.test(pl)&&!pl.startsWith('[')){
+          let p2=0;for(let j=0;j<pi;j++)p2+=lines[j].length+1;
+          const lead=lines[pi].length-lines[pi].trimStart().length;
+          spans.push({start:p2+lead,end:p2+lines[pi].length,label:'[COMPANY]'});
+        }
+      }
+    }
+  }
+  return spans;
+}
+
+function detectAddresses(text){
+  const spans=[];
+  let m;
+  // German compound street suffixes
+  STREET_SUFFIX.lastIndex=0;
+  while((m=STREET_SUFFIX.exec(text))!==null)spans.push({start:m.index,end:m.index+m[0].length,label:'[ADDRESS]'});
+  // Standalone (English/French/Spanish/Dutch)
+  STREET_STANDALONE.lastIndex=0;
+  while((m=STREET_STANDALONE.exec(text))!==null)spans.push({start:m.index,end:m.index+m[0].length,label:'[ADDRESS]'});
+  // Postfach / PO Box
+  POSTFACH.lastIndex=0;
+  while((m=POSTFACH.exec(text))!==null)spans.push({start:m.index,end:m.index+m[0].length,label:'[ADDRESS]'});
+  return spans;
+}
+
+function detectLabelTriggered(text){
+  const spans=[];
+  let m;
+  // Name labels: "Name: Jung Yul Kim" or "Mitarbeiter Jung Yul Kim"
+  const nameLabelPat=new RegExp('\\b('+NAME_LABELS.join('|')+')\\s*[:\\-]?\\s*([A-Z\u00c4\u00d6\u00dc][\\w\u00e4\u00f6\u00fc\u00df\\-]{1,25}(?:\\s+[A-Z\u00c4\u00d6\u00dc][\\w\u00e4\u00f6\u00fc\u00df\\-]{1,25}){0,3})','gm');
+  while((m=nameLabelPat.exec(text))!==null){
+    const nameStart=m.index+m[0].length-m[2].length;
+    spans.push({start:nameStart,end:nameStart+m[2].length,label:'[NAME]'});
+  }
+  // Address labels
+  const addrLabelPat=new RegExp('\\b('+ADDR_LABELS.join('|')+')\\s*[:\\-]?\\s*([^\\n]{5,80})','gm');
+  while((m=addrLabelPat.exec(text))!==null){
+    const aStart=m.index+m[0].length-m[2].length;
+    spans.push({start:aStart,end:aStart+m[2].trimEnd().length,label:'[ADDRESS]'});
+  }
+  // Sensitive field labels — redact value after colon
+  const fieldPat=new RegExp('\\b('+FIELD_LABELS.join('|')+')\\s*[:\\-\\.]+\\s*([^\\n]{1,60})','gm');
+  while((m=fieldPat.exec(text))!==null){
+    const fStart=m.index+m[0].length-m[2].length;
+    spans.push({start:fStart,end:fStart+m[2].trimEnd().length,label:'[ID]'});
+  }
+  return spans;
+}
+
+function detectNames(text,piiPos){
+  const autoSpans=[],reviewSpans=[];
+  let m;
+
+  // From/To/Cc headers
+  const hdrPat=/^(From|To|Cc|Bcc|Von|An|Betreff|Subject)[:\s]+(.+)$/gim;
+  while((m=hdrPat.exec(text))!==null){
+    const val=m[2],start=m.index+m[0].length-val.length;
+    const cp=/[A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df]{1,25}(?:\s+[A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df]{1,25})?/g;
+    let cm;while((cm=cp.exec(val))!==null)autoSpans.push({start:start+cm.index,end:start+cm.index+cm[0].length,label:'[NAME]'});
+  }
+
+  // Salutations
+  const salPat=/\b(Dear|Liebe[rn]?|Hallo|Hi|Sehr geehrte?r?|Cher|Ch\u00e8re|Estimado|Estimada)\s+([A-Z\u00c4\u00d6\u00dc][\w\u00e4\u00f6\u00fc\u00df\-]{1,20})(?:\s+([A-Z\u00c4\u00d6\u00dc][\w\u00e4\u00f6\u00fc\u00df\-]{1,20})){0,2}\b/g;
+  while((m=salPat.exec(text))!==null)autoSpans.push({start:m.index+m[1].length+1,end:m.index+m[0].length,label:'[NAME]'});
+
+  // Title + name (up to 3 tokens)
+  const tPat=new RegExp('\\b('+TITLES.map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')[,.]?\\s+([A-Z\u00c4\u00d6\u00dc][\\w\u00e4\u00f6\u00fc\u00df\\-]{1,25})(?:\\s+([A-Z\u00c4\u00d6\u00dc][\\w\u00e4\u00f6\u00fc\u00df\\-]{1,25}))?(?:\\s+([A-Z\u00c4\u00d6\u00dc][\\w\u00e4\u00f6\u00fc\u00df\\-]{1,25}))?\\b','g');
+  while((m=tPat.exec(text))!==null)autoSpans.push({start:m.index,end:m.index+m[0].length,label:'[NAME]'});
+
+  // DNA suffixes
+  DNA_SUFFIX.lastIndex=0;
+  while((m=DNA_SUFFIX.exec(text))!==null)autoSpans.push({start:m.index,end:m.index+m[0].length,label:'[NAME]'});
+
+  // DNA prefixes
+  DNA_PREFIXES.forEach(({p,l})=>{p.lastIndex=0;let pm;while((pm=p.exec(text))!==null)autoSpans.push({start:pm.index,end:pm.index+pm[0].length,label:l});});
+
+  // Hyphenated names: Jean-Pierre, Müller-Schmidt
+  const hypPat=/\b([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df]{1,20})-([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df]{1,20})\b/g;
+  while((m=hypPat.exec(text))!==null){
+    const n1=norm(m[1]),n2=norm(m[2]);
+    if((FN.has(n1)||LN.has(n1)||FN.has(n2)||LN.has(n2)))
+      autoSpans.push({start:m.index,end:m.index+m[0].length,label:'[NAME]'});
+    else
+      reviewSpans.push({start:m.index,end:m.index+m[0].length,original:m[0],label:'[NAME]',reason:'Hyphenated capitalised pair'});
+  }
+
+  // Known name list — 2 or 3 tokens
+  const wpat=/\b([A-Za-z\u00c0-\u024f\-]{2,25})\s+([A-Za-z\u00c0-\u024f\-]{2,25})(?:\s+([A-Za-z\u00c0-\u024f\-]{2,25}))?\b/g;
+  while((m=wpat.exec(text))!==null){
+    const n1=norm(m[1]),n2=norm(m[2]),n3=m[3]?norm(m[3]):'';
+    if(SKIP.has(n1)||SKIP.has(n2)) continue;
+    const hit2=(FN.has(n1)||LN.has(n1))&&(FN.has(n2)||LN.has(n2));
+    const hit3=n3&&(FN.has(n1)||LN.has(n1))&&(FN.has(n3)||LN.has(n3));
+    const hit1fn=FN.has(n1)&&/^[A-Z\u00c4\u00d6\u00dc]/.test(m[2]);
+    if(hit3)autoSpans.push({start:m.index,end:m.index+m[0].length,label:'[NAME]'});
+    else if(hit2)autoSpans.push({start:m.index,end:m.index+(m[1]+' '+m[2]).length,label:'[NAME]'});
+    else if(hit1fn)autoSpans.push({start:m.index,end:m.index+(m[1]+' '+m[2]).length,label:'[NAME]'});
+  }
+
+  // Signature block
+  const signoffs=['Regards','Sincerely','Yours','Cheers','Thanks','Best','Gr\u00fc\u00dfe','Gru\u00df','freundlichen','hochachtungsvoll','Cordialement','Atentamente','Mvh'];
+  const lines=text.split('\n');
+  for(let i=0;i<lines.length;i++){
+    if(signoffs.some(s=>lines[i].toLowerCase().includes(s.toLowerCase()))){
+      for(let j=i+1;j<=Math.min(i+5,lines.length-1);j++){
+        const c=lines[j].trim();
+        if(c.length>2&&/^[A-Z\u00c4\u00d6\u00dc]/.test(c)&&!c.startsWith('[')&&!/\d/.test(c)&&c.split(/\s+/).length<=4&&c.length<60){
+          let p2=0;for(let k=0;k<j;k++)p2+=lines[k].length+1;
+          const lead=lines[j].length-lines[j].trimStart().length;
+          autoSpans.push({start:p2+lead,end:p2+lines[j].trimEnd().length,label:'[NAME]'});
+          break;
+        }
+      }
+    }
+  }
+
+  // ALL-CAPS names: 2-4 consecutive ALL-CAPS tokens (2-20 chars each), not known abbreviations
+  const capsPat=/\b([A-Z\u00c4\u00d6\u00dc]{2,20})\s+([A-Z\u00c4\u00d6\u00dc]{2,20})(?:\s+([A-Z\u00c4\u00d6\u00dc]{2,20}))?(?:\s+([A-Z\u00c4\u00d6\u00dc]{2,20}))?\b/g;
+  while((m=capsPat.exec(text))!==null){
+    const tokens=[m[1],m[2],m[3],m[4]].filter(Boolean);
+    if(tokens.every(t=>CAPS_SKIP.has(t)))continue;
+    if(tokens.some(t=>CAPS_SKIP.has(t)&&t.length<=3))continue;
+    // Must have at least one non-abbreviation token of 3+ chars
+    const realTokens=tokens.filter(t=>!CAPS_SKIP.has(t)&&t.length>=3);
+    if(realTokens.length<2)continue;
+    const already=autoSpans.some(s=>m.index>=s.start&&m.index<s.end);
+    if(already)continue;
+    if(nearPII(m.index,m.index+m[0].length,piiPos))
+      autoSpans.push({start:m.index,end:m.index+m[0].length,label:'[NAME]'});
+    else
+      reviewSpans.push({start:m.index,end:m.index+m[0].length,original:m[0],label:'[NAME]',reason:'ALL-CAPS \u2014 possible name'});
+  }
+
+  // EA review
+  const eaPat=/\b([A-Za-z]{2,6})\b/g;
+  while((m=eaPat.exec(text))!==null){
+    if(EA_REVIEW.has(m[1].toLowerCase())&&!text.slice(Math.max(0,m.index-1),m.index+m[1].length+1).includes('['))
+      reviewSpans.push({start:m.index,end:m.index+m[0].length,original:m[0],label:'[NAME]',reason:'Common East Asian / ambiguous surname'});
+  }
+
+  // 2-3 token capitalised heuristic (near PII = auto, else review)
+  const cap2Pat=/(?<![.!?]\s)(?<![.!?]\n)\b([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df\-]{2,20})\s+([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df\-]{2,20})(?:\s+([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df\-]{2,20}))?\b/g;
+  while((m=cap2Pat.exec(text))!==null){
+    const n1=norm(m[1]),n2=norm(m[2]);
+    if(SKIP.has(n1)||SKIP.has(n2))continue;
+    const already=autoSpans.some(s=>m.index>=s.start&&m.index<s.end);
+    if(already)continue;
+    if(nearPII(m.index,m.index+m[0].length,piiPos))
+      autoSpans.push({start:m.index,end:m.index+m[0].length,label:'[NAME]'});
+    else
+      reviewSpans.push({start:m.index,end:m.index+m[0].length,original:m[0],label:'[NAME]',reason:'Capitalised pair/triple \u2014 possible name'});
+  }
+
+  return{autoSpans,reviewSpans};
+}
+
+// ── Regex rules ───────────────────────────────────────────────────────────────
+const RULES=[
+  {id:'name',    lbl:'[NAME]',       grp:'identity'},
+  {id:'company', lbl:'[COMPANY]',    grp:'identity'},
+  {id:'address', lbl:'[ADDRESS]',    grp:'contact'},
+  {id:'email',   lbl:'[EMAIL]',      grp:'contact', pat:/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g},
+  {id:'phone',   lbl:'[PHONE]',      grp:'contact', pat:/(?<![,.\d])(?:\+\d[\d\s\-\/().]{6,}\d|00\d[\d\s\-\/().]{5,}\d|0\d[\d\s\-\/().]{5,}\d|(?<![.,])\b\d{7,15}\b(?![.,\d]))(?![,.\d])/g},
+  {id:'url',     lbl:'[URL]',        grp:'contact', pat:/https?:\/\/[^\s"'<>]+/g},
+  {id:'postcode',lbl:'[POSTCODE]',   grp:'contact', pat:/(?<![A-Z0-9])(?:[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}|\b\d{5}\b(?![,.\d]))(?![A-Z0-9])/g},
+  // IBANs first, then BIC (to avoid postcode grabbing inside IBAN)
+  {id:'iban',    lbl:'[IBAN]',       grp:'ids',     pat:/\b[A-Z]{2}\d{2}(?:\s?[A-Z0-9]{4})*\s?[A-Z0-9]{1,4}\b/g},
+  {id:'bic',     lbl:'[BIC]',        grp:'ids',     pat:/\b[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}(?:[A-Z0-9]{3})?\b/g},
+  // German Steuernummer: 10-13 digits with slashes e.g. 123/456/78901
+  {id:'taxid',   lbl:'[TAX ID]',     grp:'ids',     pat:/\b\d{2,3}\/\d{3,4}\/\d{4,5}\b/g},
+  // Steuer-ID: 11 digits
+  {id:'steuerid',lbl:'[TAX ID]',     grp:'ids',     pat:/\b(?<!\d)\d{11}(?!\d)\b/g},
+  // Sozialversicherungsnummer: e.g. 65 070893 M 004
+  {id:'svnr',    lbl:'[SOC SEC]',    grp:'ids',     pat:/\b\d{2}\s\d{6}\s[A-Z]\s\d{3}\b/g},
+  // Spanish DNI/NIE
+  {id:'dni',     lbl:'[NATIONAL ID]',grp:'ids',     pat:/\b(?:[XYZ]\d{7}[A-Z]|\d{8}[A-Z])\b/g},
+  // Dutch BSN: 9 digits
+  {id:'bsn',     lbl:'[NATIONAL ID]',grp:'ids',     pat:/\b(?<!\d)\d{9}(?!\d)\b/g},
+  // Italian Codice Fiscale: 6 letters + 2 digits + letter + 2 digits + letter + 3 digits + letter
+  {id:'cf',      lbl:'[NATIONAL ID]',grp:'ids',     pat:/\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b/g},
+  // Date: but NOT clause numbers like §4.2.1 or version numbers
+  {id:'date',    lbl:'[DATE]',       grp:'ids',     pat:/(?<![§\d.])(?:\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}\b|\b\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}\b|\b\d{1,2}\.\d{1,2}\.\d{2,4}\b(?!\d)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+\d{1,2}[\s,]+\d{4})(?!\.\d)/gi},
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let reviewItems=[],autoSummary=[],baseText='';
+
+// ── Main clean ────────────────────────────────────────────────────────────────
+function runClean(){
+  const raw=document.getElementById('inp').value;
+  if(!raw.trim()){showToast('No input to clean',true);return;}
+  autoSummary=[];reviewItems=[];
+  const piiPos=getPIIPositions(raw);
+  let allAuto=[];
+  allAuto.push(...detectCompanies(raw));
+  allAuto.push(...detectAddresses(raw));
+  allAuto.push(...detectLabelTriggered(raw));
+  const{autoSpans:nAuto,reviewSpans:nReview}=detectNames(raw,piiPos);
+  allAuto.push(...nAuto);
+
+  const{text:t1,merged}=applySpans(raw,allAuto);
+  merged.forEach(s=>autoSummary.push({original:raw.slice(s.start,s.end),label:s.label}));
+
+  let t2=t1;
+  RULES.filter(r=>r.pat).forEach(rule=>{
+    t2=t2.replace(rule.pat,match=>{
+      // Prevent double-redacting already-labelled spans
+      if(match.startsWith('['))return match;
+      autoSummary.push({original:match,label:rule.lbl});
+      return rule.lbl;
+    });
+  });
+
+  baseText=t2;
+
+  // Apply custom terms
+  const customRaw=document.getElementById('customTerms').value;
+  if(customRaw.trim()){
+    const terms=customRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    terms.forEach(term=>{
+      const tPat=new RegExp('\\b'+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','gi');
+      baseText=baseText.replace(tPat,match=>{
+        autoSummary.push({original:match,label:'[NAME]'});
+        return '[NAME]';
+      });
+    });
+  }
+
+  const piiPos2=getPIIPositions(baseText);
+  let rid=0;
+
+  // EA names on cleaned text
+  const eaP=/\b([A-Za-z]{2,6})\b/g;let em;
+  while((em=eaP.exec(baseText))!==null){
+    if(EA_REVIEW.has(em[1].toLowerCase())&&!baseText.slice(Math.max(0,em.index-1),em.index+em[1].length+1).includes('['))
+      reviewItems.push({id:'rv'+(rid++),start:em.index,end:em.index+em[0].length,original:em[0],label:'[NAME]',reason:'Common East Asian / ambiguous surname',status:'pending'});
+  }
+
+  // 2-3 token caps on cleaned text
+  const capP=/(?<![.!?]\s)(?<![.!?]\n)\b([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df\-]{2,20})\s+([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df\-]{2,20})(?:\s+([A-Z\u00c4\u00d6\u00dc][a-z\u00e4\u00f6\u00fc\u00df\-]{2,20}))?\b/g;
+  while((em=capP.exec(baseText))!==null){
+    const n1=norm(em[1]),n2=norm(em[2]);
+    if(SKIP.has(n1)||SKIP.has(n2))continue;
+    if(baseText.slice(em.index,em.index+em[0].length).includes('['))continue;
+    if(nearPII(em.index,em.index+em[0].length,piiPos2))continue;
+    const overlaps=reviewItems.some(r=>em.index<r.end&&(em.index+em[0].length)>r.start);
+    if(overlaps)continue;
+    reviewItems.push({id:'rv'+(rid++),start:em.index,end:em.index+em[0].length,original:em[0],label:'[NAME]',reason:'Capitalised pair/triple \u2014 possible name',status:'pending'});
+  }
+
+  // ALL-CAPS on cleaned text → review
+  const capsP=/\b([A-Z\u00c4\u00d6\u00dc]{2,20})\s+([A-Z\u00c4\u00d6\u00dc]{2,20})(?:\s+([A-Z\u00c4\u00d6\u00dc]{2,20}))?(?:\s+([A-Z\u00c4\u00d6\u00dc]{2,20}))?\b/g;
+  while((em=capsP.exec(baseText))!==null){
+    const tokens=[em[1],em[2],em[3],em[4]].filter(Boolean);
+    if(tokens.every(t=>CAPS_SKIP.has(t)))continue;
+    const real=tokens.filter(t=>!CAPS_SKIP.has(t)&&t.length>=3);
+    if(real.length<2)continue;
+    if(baseText.slice(em.index,em.index+em[0].length).includes('['))continue;
+    const overlaps=reviewItems.some(r=>em.index<r.end&&(em.index+em[0].length)>r.start);
+    if(overlaps)continue;
+    if(nearPII(em.index,em.index+em[0].length,piiPos2))
+      autoSummary.push({original:em[0],label:'[NAME]'});
+    else
+      reviewItems.push({id:'rv'+(rid++),start:em.index,end:em.index+em[0].length,original:em[0],label:'[NAME]',reason:'ALL-CAPS \u2014 possible name',status:'pending'});
+  }
+
+  reviewItems.forEach(rv=>{
+    const cs=Math.max(0,rv.start-80),ce=Math.min(baseText.length,rv.end+80);
+    rv.context=(cs>0?'...':'')+baseText.slice(cs,ce)+(ce<baseText.length?'...':'');
+  });
+  reviewItems.sort((a,b)=>a.start-b.start);
+
+  document.getElementById('outpanel').innerHTML=escapeAndTag(baseText);
+  renderReviewPanel();
+
+  if(reviewItems.length>0){
+    showToast(autoSummary.length+' auto-redacted \u00b7 '+reviewItems.length+' flagged for review');
+  } else {
+    document.getElementById('btnFinal').style.display='';
+    showToast(autoSummary.length>0?'\u2713 '+autoSummary.length+' items redacted':'\u2713 Nothing found to redact');
+  }
+}
+
+// ── Review panel ──────────────────────────────────────────────────────────────
+function renderReviewPanel(){
+  const pending=reviewItems.filter(r=>r.status==='pending');
+  const panel=document.getElementById('review-panel');
+  const list=document.getElementById('rp-list');
+  const count=document.getElementById('rp-count');
+  if(reviewItems.length===0){panel.style.display='none';return;}
+  panel.style.display='block';
+  if(pending.length===0){
+    list.innerHTML='<div class="rp-empty">\u2713 All items reviewed \u2014 click Finalise</div>';
+    count.textContent='';
+    document.getElementById('btnFinal').style.display='';
+    return;
+  }
+  count.textContent='('+pending.length+' remaining)';
+  document.getElementById('btnFinal').style.display='';
+  list.innerHTML=reviewItems.map(rv=>{
+    const done=rv.status!=='pending';
+    const pe=esc(rv.original);
+    const hctx=esc(rv.context).split(pe).join('<mark>'+pe+'</mark>');
+    const sameCount=reviewItems.filter(r=>r.status==='pending'&&r.original===rv.original).length;
+    const bulkLabel=sameCount>1?' ('+sameCount+')':'';
+    const enc=encodeURIComponent(rv.original);
+    return '<div class="rp-item'+(done?' done':'')+'" id="rpi-'+rv.id+'" tabindex="0" onkeydown="rpKey(event,\''+rv.id+'\')">'+
+      '<div class="rp-item-top">'+
+        '<div class="rp-phrase">'+pe+'</div>'+
+        '<div class="rp-middle"><div class="rp-context">'+hctx+'</div><div class="rp-reason">'+rv.reason+'</div></div>'+
+        '<div class="rp-actions">'+
+          '<button class="btn-rv-redact" onclick="rpAction(\''+rv.id+'\',\'redact\')">Redact</button>'+
+          '<button class="btn-rv-keep" onclick="rpAction(\''+rv.id+'\',\'keep\')">Keep</button>'+
+        '</div>'+
+      '</div>'+
+      (sameCount>1?
+        '<div class="rp-bulk">'+
+          '<button class="btn-bulk-redact" onclick="rpBulk(\''+enc+'\',\'redact\')">\u2713 Redact all &ldquo;'+pe+'&rdquo;'+bulkLabel+'</button>'+
+          '<button class="btn-bulk-keep" onclick="rpBulk(\''+enc+'\',\'keep\')">Keep all &ldquo;'+pe+'&rdquo;'+bulkLabel+'</button>'+
+        '</div>':'')+
+    '</div>';
+  }).join('');
+
+}
+
+function rpKey(e,id){if(e.key==='Enter'){e.preventDefault();rpAction(id,'redact');}}
+function rpAction(id,action){
+  const rv=reviewItems.find(r=>r.id===id);
+  if(!rv||rv.status!=='pending')return;
+  rv.status=action;
+  if(action==='redact')autoSummary.push({original:rv.original,label:rv.label});
+  const list=document.getElementById('rp-list');
+  const scrollTop=list?list.scrollTop:0;
+  renderReviewPanel();
+  if(list)list.scrollTop=scrollTop;
+}
+function rpBulk(enc,action){
+  const phrase=decodeURIComponent(enc);
+  const affected=reviewItems.filter(r=>r.status==='pending'&&r.original===phrase);
+  affected.forEach(rv=>{rv.status=action;if(action==='redact')autoSummary.push({original:rv.original,label:rv.label});});
+  showToast((action==='redact'?'Redacted':'Kept')+' all '+affected.length+' instance'+(affected.length!==1?'s':'')+' of "'+phrase+'"');
+  const listB=document.getElementById('rp-list');
+  const scrollB=listB?listB.scrollTop:0;
+  renderReviewPanel();
+  if(listB)listB.scrollTop=scrollB;
+}
+function redactAllRemaining(){
+  reviewItems.filter(r=>r.status==='pending').forEach(rv=>{rv.status='redact';autoSummary.push({original:rv.original,label:rv.label});});
+  renderReviewPanel();
+  showToast('All remaining items redacted');
+}
+function keepAllRemaining(){
+  const n=reviewItems.filter(r=>r.status==='pending').length;
+  reviewItems.filter(r=>r.status==='pending').forEach(rv=>{rv.status='keep';});
+  renderReviewPanel();
+  showToast('Kept all '+n+' remaining items');
+}
+
+// ── Finalise ──────────────────────────────────────────────────────────────────
+function finalise(){
+  let text=baseText;
+  reviewItems.filter(r=>r.status==='redact').sort((a,b)=>b.start-a.start).forEach(rv=>{
+    text=text.slice(0,rv.start)+rv.label+text.slice(rv.end);
+  });
+  document.getElementById('outpanel')._plain=text;
+  document.getElementById('outmode').textContent='\u2014 Final';
+  document.getElementById('outpanel').innerHTML=escapeAndTag(text);
+  buildSummary();
+  showToast('\u2713 Document finalised');
+}
+
+function buildSummary(){
+  const sumEl=document.getElementById('summary');
+  sumEl.style.display='block';
+  const counts={};
+  autoSummary.forEach(({label})=>{const k=label.replace(/[\[\]]/g,'');counts[k]=(counts[k]||0)+1;});
+  document.getElementById('sumgrid').innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<div class="sum-card"><div class="sc-n">'+v+'</div><div class="sc-l">'+k+'</div></div>').join('');
+  document.getElementById('sumlist').innerHTML=autoSummary.map(({original,label})=>'<div><b>'+esc(original)+'</b> \u2192 '+label+'</div>').join('');
+  sumEl.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── Misc ──────────────────────────────────────────────────────────────────────
+function copyOutput(){
+  const op=document.getElementById('outpanel');
+  const text=op._plain||op.textContent;
+  if(!text.trim()){showToast('Nothing to copy',true);return;}
+  navigator.clipboard.writeText(text).then(()=>showToast('Copied to clipboard'));
+}
+function clearOut(){
+  document.getElementById('outpanel').innerHTML='';
+  document.getElementById('outpanel')._plain='';
+  document.getElementById('outmode').textContent='';
+  document.getElementById('btnFinal').style.display='none';
+  document.getElementById('review-panel').style.display='none';
+  document.getElementById('summary').style.display='none';
+  reviewItems=[];autoSummary=[];baseText='';
+}
+function buildRulesUI(){
+  const grps={identity:[],contact:[],ids:[]};
+  RULES.forEach(r=>grps[r.grp].push(r));
+  const grid=document.getElementById('rulesgrid');
+  const labels={identity:'Identity',contact:'Contact & Location',ids:'Identifiers'};
+  // Deduplicate labels in ids group (multiple rules share same lbl)
+  Object.entries(grps).forEach(([gid,rules])=>{
+    const gl=document.createElement('div');gl.className='grp-lbl';gl.textContent=labels[gid];grid.appendChild(gl);
+    const row=document.createElement('div');row.className='rules-row';
+    const seen=new Set();
+    rules.forEach(rule=>{
+      if(seen.has(rule.lbl))return;seen.add(rule.lbl);
+      const tag=document.createElement('div');tag.className='rtag';
+      tag.innerHTML='<div class="dot"></div><span>'+rule.lbl+'</span>';
+      row.appendChild(tag);
+    });
+    grid.appendChild(row);
+  });
+  const note=document.createElement('div');note.className='rnote';
+  note.textContent='\u26a0 Names auto-redacted when recognised or near other PII. Ambiguous pairs flagged for review.';
+  grid.appendChild(note);
+}
+buildRulesUI();
+</script>
+</body>
+</html>
