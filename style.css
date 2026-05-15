@@ -28,7 +28,7 @@ nav {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
-  background: var(--espresso);
+  background: var(--jungle);
   display: flex;
   align-items: baseline;
   justify-content: space-between;
