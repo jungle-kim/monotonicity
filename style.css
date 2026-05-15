@@ -3,13 +3,13 @@
    ============================================ */
 
 :root {
-  --espresso: #003049;        /* text, headings */
-  --canvas: #F1F4F2;          /* nav text */
-  --warm-white: #F1F4F2;      /* page background */
-  --orange: #A38A00;          /* accents, labels, links */
-  --jungle: #003049;          /* nav background */
-  --line: #e8e2d8;            /* dividers, borders */
-  --mid: #5a5a52;             /* metadata, muted text */
+  --espresso: #0A231A;
+  --canvas: #F1F4F2;
+  --warm-white: #F1F4F2;
+  --orange: #A38A00;
+  --jungle: #003049;
+  --line: #e8e2d8;
+  --mid: #5a5a52;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
